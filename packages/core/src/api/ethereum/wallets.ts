@@ -16,6 +16,14 @@ import {
 import type { EIP1193Provider } from "viem";
 import { getAppKitWallets$ } from "../appKit";
 
+// Wallets that support both Polkadot and Ethereum APIs
+// These should be connected via their Polkadot extension to access both
+// Substrate and EVM accounts with polkadotSigner
+const DUAL_SUPPORT_WALLET_RDNS = [
+  "io.talisman", // Talisman
+  "app.subwallet", // SubWallet
+];
+
 const providersDetails$ = new Observable<EIP6963ProviderDetail[]>(
   (subscriber) => {
     const store = createStore();
@@ -70,23 +78,30 @@ const ethereumInjectedWallets$ = new Observable<EthereumInjectedWallet[]>(
     const sub = combineLatest([providersDetails$, enabledWalletIds$])
       .pipe(
         map(([providerDetails, enabledWalletIds]) => {
-          return providerDetails.map((pd): EthereumInjectedWallet => {
-            const walletId = getWalletId("ethereum", pd.info.rdns);
-            const provider = pd.provider as EIP1193Provider;
+          return providerDetails
+            .filter((pd) => {
+              // Filter out wallets that support both Polkadot and Ethereum APIs
+              // Users should connect these via their Polkadot extension to get
+              // both Substrate and EVM accounts with polkadotSigner support
+              return !DUAL_SUPPORT_WALLET_RDNS.includes(pd.info.rdns);
+            })
+            .map((pd): EthereumInjectedWallet => {
+              const walletId = getWalletId("ethereum", pd.info.rdns);
+              const provider = pd.provider as EIP1193Provider;
 
-            return {
-              platform: "ethereum",
-              type: "injected",
-              id: walletId,
-              name: pd.info.name,
-              icon: pd.info.icon,
-              provider,
-              isConnected: enabledWalletIds.has(walletId),
-              providerId: pd.info.rdns,
-              connect: () => connectWallet(walletId, provider),
-              disconnect: () => disconnectWallet(walletId),
-            };
-          });
+              return {
+                platform: "ethereum",
+                type: "injected",
+                id: walletId,
+                name: pd.info.name,
+                icon: pd.info.icon,
+                provider,
+                isConnected: enabledWalletIds.has(walletId),
+                providerId: pd.info.rdns,
+                connect: () => connectWallet(walletId, provider),
+                disconnect: () => disconnectWallet(walletId),
+              };
+            });
         }),
       )
       .subscribe(subscriber);

@@ -1,18 +1,15 @@
 import { GithubIcon } from "@/assets/GithubIcon";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
+import { WalletConnectorModal } from "@/components/WalletConnectorModal";
 import { usePlaygroundConfig } from "@/lib/config/playgroundConfig";
 import { wagmiConfig } from "@/lib/wagmi";
 import { KheopskitProvider } from "@kheopskit/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { Accounts } from "./blocks/Accounts";
 import { Config } from "./blocks/Config";
 import { SubmitTx } from "./blocks/SubmitTx";
-import { Wagmi } from "./blocks/Wagmi";
 import { Wallets } from "./blocks/Wallets";
-
-const queryClient = new QueryClient();
 
 export const App = () => {
   // IMPORTANT on your app, kheopskit's config should be hardcoded
@@ -21,10 +18,8 @@ export const App = () => {
   return (
     <KheopskitProvider config={config}>
       <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>
-          <AppContent />
-          <Toaster />
-        </QueryClientProvider>
+        <AppContent />
+        <Toaster />
       </WagmiProvider>
     </KheopskitProvider>
   );
@@ -42,7 +37,7 @@ const AppContent = () => (
     <Wallets />
     <Accounts />
     <SubmitTx />
-    <Wagmi />
+    <WalletConnectorModal />
     <Footer />
   </div>
 );

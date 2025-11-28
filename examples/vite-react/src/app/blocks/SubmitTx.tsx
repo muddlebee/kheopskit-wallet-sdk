@@ -44,7 +44,14 @@ export const SubmitTx = () => (
 
 const Content = () => {
   const defaultNetworkId = useDefaultNetworkId();
-  const [networkId, setNetworkId] = useState<string>(String(defaultNetworkId));
+  const [networkId, setNetworkId] = useState<string>(defaultNetworkId ? String(defaultNetworkId) : "");
+
+  // Set networkId when defaultNetworkId becomes available
+  useEffect(() => {
+    if (defaultNetworkId && !networkId) {
+      setNetworkId(String(defaultNetworkId));
+    }
+  }, [defaultNetworkId, networkId]);
 
   const network = useMemo(
     () => APPKIT_CHAINS.find((a) => a.id === networkId) ?? null,
@@ -62,6 +69,15 @@ const Content = () => {
     () => accounts.find((a) => a.id === recipientId) ?? null,
     [recipientId, accounts],
   );
+
+  // Show loading state if config is not ready
+  if (!defaultNetworkId) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-muted-foreground">Loading configuration...</div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if ((!account || !recipient) && network && accounts.length) {
@@ -342,23 +358,25 @@ const useDefaultNetworkId = () => {
   const { config } = useWallets();
 
   return useMemo(() => {
-    if (!config.platforms?.length)
-      throw new Error("No platforms configured in KheopskitConfig");
+    // Check if config is loaded
+    if (!config || !config.platforms?.length) {
+      return null; // Return null instead of throwing error
+    }
 
     if (config.platforms.includes("polkadot")) {
       const polkadotChains = APPKIT_CHAINS.filter(isPolkadotNetwork);
-      if (!polkadotChains.length)
-        throw new Error("No Polkadot chains configured in KheopskitConfig");
-      return polkadotChains[0].id;
+      if (polkadotChains.length > 0) {
+        return polkadotChains[0].id;
+      }
     }
 
     if (config.platforms.includes("ethereum")) {
       const ethereumChains = APPKIT_CHAINS.filter(isEthereumNetwork);
-      if (!ethereumChains.length)
-        throw new Error("No Ethereum chains configured in KheopskitConfig");
-      if (ethereumChains.length === 1) return ethereumChains[0].id;
+      if (ethereumChains.length > 0) {
+        return ethereumChains[0].id;
+      }
     }
 
-    throw new Error("No default network found for the selected platforms");
-  }, [config.platforms]);
+    return null; // Return null instead of throwing error
+  }, [config?.platforms]);
 };

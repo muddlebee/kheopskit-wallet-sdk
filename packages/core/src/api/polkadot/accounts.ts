@@ -30,7 +30,7 @@ const getInjectedWalletAccounts$ = (
   return new Observable<PolkadotAccount[]>((subscriber) => {
     const getAccount = (account: InjectedPolkadotAccount): PolkadotAccount => ({
       id: getWalletAccountId(wallet.id, account.address),
-      ...account,
+      ...account, // Includes polkadotSigner from the extension
       platform: "polkadot",
       walletName: wallet.name,
       walletId: wallet.id,
@@ -40,10 +40,12 @@ const getInjectedWalletAccounts$ = (
 
     // subscribe to changes
     const unsubscribe = extension.subscribe((accounts) => {
+      // Returns ALL accounts including EVM accounts (0x...) from extensions like Talisman/SubWallet
+      // These EVM accounts have polkadotSigner and can sign Substrate transactions on chains like Moonbeam
       subscriber.next(accounts.map(getAccount));
     });
 
-    // initial value
+    // initial value - includes both Substrate (5G...) and EVM (0x...) accounts
     subscriber.next(extension.getAccounts().map(getAccount));
 
     return () => {
@@ -134,13 +136,13 @@ export const getPolkadotAccounts$ = (
         switchMap((wallets) =>
           wallets.length
             ? combineLatest([
-                ...wallets
-                  .filter((w) => w.type === "injected")
-                  .map(getInjectedWalletAccounts$),
-                ...wallets
-                  .filter((w) => w.type === "appKit")
-                  .map(getAppKitAccounts$),
-              ])
+              ...wallets
+                .filter((w) => w.type === "injected")
+                .map(getInjectedWalletAccounts$),
+              ...wallets
+                .filter((w) => w.type === "appKit")
+                .map(getAppKitAccounts$),
+            ])
             : of([]),
         ),
         map((accounts) => accounts.flat()),
