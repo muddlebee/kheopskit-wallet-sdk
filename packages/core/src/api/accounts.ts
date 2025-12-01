@@ -2,6 +2,7 @@ import { sortAccounts } from "@/utils/sortAccounts";
 import { Observable, combineLatest, map, of, shareReplay } from "rxjs";
 import { getEthereumAccounts$ } from "./ethereum/accounts";
 import { getPolkadotAccounts$ } from "./polkadot/accounts";
+import { getSolanaAccounts$ } from "./solana/accounts";
 import type { KheopskitConfig, Wallet, WalletAccount } from "./types";
 
 export const getAccounts$ = (
@@ -24,14 +25,20 @@ export const getAccounts$ = (
                 map((w) => w.filter((w) => w.platform === "ethereum")),
               ),
             );
+          case "solana":
+            return getSolanaAccounts$(
+              wallets.pipe(
+                map((w) => w.filter((w) => w.platform === "solana")),
+              ),
+            );
         }
       },
     );
 
     const accounts$ = sources.length
       ? combineLatest(sources).pipe(
-          map((accounts) => accounts.flat().sort(sortAccounts)),
-        )
+        map((accounts) => accounts.flat().sort(sortAccounts)),
+      )
       : of([]);
 
     const sub = accounts$.subscribe(subscriber);

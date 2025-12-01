@@ -13,6 +13,7 @@ import type {
   EIP1193Provider,
   WalletClient,
 } from "viem";
+import type { WalletAdapterCompatibleStandardWallet } from "@solana/wallet-adapter-base";
 
 export type KheopskitConfig = {
   autoReconnect: boolean;
@@ -85,7 +86,21 @@ export type EthereumAppKitWallet = {
 
 export type EthereumWallet = EthereumInjectedWallet | EthereumAppKitWallet;
 
-export type Wallet = PolkadotWallet | EthereumWallet;
+export type SolanaInjectedWallet = {
+  id: WalletId;
+  platform: "solana";
+  type: "injected";
+  wallet: WalletAdapterCompatibleStandardWallet;
+  name: string;
+  icon: string;
+  isConnected: boolean;
+  connect: () => Promise<void>;
+  disconnect: () => void;
+};
+
+export type SolanaWallet = SolanaInjectedWallet;
+
+export type Wallet = PolkadotWallet | EthereumWallet | SolanaWallet;
 
 export type WalletPlatform = Wallet["platform"];
 
@@ -106,4 +121,13 @@ export type EthereumAccount = {
   isWalletDefault: boolean;
 };
 
-export type WalletAccount = PolkadotAccount | EthereumAccount;
+export type SolanaAccount = {
+  id: WalletAccountId;
+  platform: "solana";
+  publicKey: Uint8Array;
+  address: string;
+  walletName: string;
+  walletId: string;
+};
+
+export type WalletAccount = PolkadotAccount | EthereumAccount | SolanaAccount;

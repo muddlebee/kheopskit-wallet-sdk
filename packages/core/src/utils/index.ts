@@ -3,6 +3,7 @@ export * from "./createStore";
 export * from "./getAccountAddressType";
 export * from "./WalletAccountId";
 export * from "./isEthereumAddress";
+export * from "./isSolanaAddress";
 export * from "./isSs58Address";
 export * from "./isValidAddress";
 export * from "./sleep";

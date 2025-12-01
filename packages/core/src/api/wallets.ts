@@ -12,6 +12,7 @@ import {
 } from "rxjs";
 import { getEthereumWallets$ } from "./ethereum/wallets";
 import { getPolkadotWallets$ } from "./polkadot/wallets";
+import { getSolanaWallets$ } from "./solana/wallets";
 import { store } from "./store";
 import type { KheopskitConfig, Wallet } from "./types";
 
@@ -31,6 +32,8 @@ export const getWallets$ = (config: KheopskitConfig) => {
             return getPolkadotWallets$(config);
           case "ethereum":
             return getEthereumWallets$(config);
+          case "solana":
+            return getSolanaWallets$(config);
         }
       },
     );
