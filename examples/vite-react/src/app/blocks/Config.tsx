@@ -77,6 +77,7 @@ const AutoReconnect = () => {
 const PLATFORMS: Record<WalletPlatform, string> = {
   polkadot: "Polkadot (with PAPI)",
   ethereum: "Ethereum (with Viem or Wagmi)",
+  solana: "Solana (with Wallet Standard)",
 };
 
 const Platforms = () => {

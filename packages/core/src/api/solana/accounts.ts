@@ -24,6 +24,62 @@ const getInjectedWalletAccounts$ = (
   return getCachedObservable$(`accounts:solana:${wallet.id}`, () =>
     new Observable<SolanaAccount[]>((subscriber) => {
       const mapAccount = (account: StandardWalletAccount): SolanaAccount => {
+        // Create signMessage function using the wallet's solana:signMessage feature
+        const signMessage = async (message: Uint8Array): Promise<Uint8Array> => {
+          // Check if wallet supports message signing
+          if (!("solana:signMessage" in wallet.wallet.features)) {
+            throw new Error(
+              `Wallet ${wallet.name} does not support message signing`,
+            );
+          }
+
+          // Get the signMessage feature
+          const signMessageFeature = wallet.wallet.features["solana:signMessage"];
+
+          if (!signMessageFeature) {
+            throw new Error(
+              `Wallet ${wallet.name} signMessage feature is not available`,
+            );
+          }
+
+          if (!signMessageFeature.signMessage || typeof signMessageFeature.signMessage !== "function") {
+            throw new Error(
+              `Wallet ${wallet.name} signMessage method is not properly configured`,
+            );
+          }
+
+          try {
+            // Call signMessage with the account and message
+            // The API is variadic: (...inputs) => Promise<outputs[]>
+            // We pass a single input object and expect a single output in the array
+            const results = await signMessageFeature.signMessage({
+              account,
+              message,
+            });
+
+            // Validate the result
+            if (!Array.isArray(results) || results.length === 0) {
+              throw new Error("Wallet returned empty signature result");
+            }
+
+            const result = results[0];
+            if (!result || !result.signature) {
+              throw new Error("Wallet returned invalid signature result");
+            }
+
+            // Return the signature as Uint8Array
+            return new Uint8Array(result.signature);
+          } catch (error) {
+            // Re-throw with more context if it's not already an Error
+            if (error instanceof Error) {
+              throw error;
+            }
+            throw new Error(
+              `Failed to sign message: ${String(error)}`,
+            );
+          }
+        };
+
         // WalletAccount already provides address as base58 string and publicKey as bytes
         return {
           id: getWalletAccountId(wallet.id, account.address),
@@ -32,6 +88,7 @@ const getInjectedWalletAccounts$ = (
           address: account.address,
           walletName: wallet.name,
           walletId: wallet.id,
+          signMessage,
         };
       };
 

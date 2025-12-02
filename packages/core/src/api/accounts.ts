@@ -31,6 +31,8 @@ export const getAccounts$ = (
                 map((w) => w.filter((w) => w.platform === "solana")),
               ),
             );
+          default:
+            throw new Error(`Unsupported platform: ${platform satisfies never}`);
         }
       },
     );

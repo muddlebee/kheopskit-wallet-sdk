@@ -94,6 +94,22 @@ const SignButton: FC<{ account: WalletAccount }> = ({ account }) => {
         }
         break;
       }
+
+      case "solana": {
+        try {
+          // Convert message string to Uint8Array
+          const messageBytes = new TextEncoder().encode(MESSAGE);
+          const signature = await account.signMessage(messageBytes);
+          // Convert signature bytes to hex string for display
+          const hexSignature = Array.from(signature)
+            .map((b: number) => b.toString(16).padStart(2, "0"))
+            .join("");
+          toast.success(`Signature: 0x${hexSignature}`);
+        } catch (err) {
+          toast.error(`Error: ${(err as Error).message}`);
+        }
+        break;
+      }
     }
   }, [account]);
 
