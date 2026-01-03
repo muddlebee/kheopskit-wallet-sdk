@@ -129,6 +129,10 @@ export type SolanaAccount = {
   walletName: string;
   walletId: string;
   signMessage: (message: Uint8Array) => Promise<Uint8Array>;
+  signAndSendTransaction: (
+    transaction: Uint8Array,
+    options?: { minContextSlot?: number }
+  ) => Promise<{ signature: Uint8Array }>;
 };
 
 export type WalletAccount = PolkadotAccount | EthereumAccount | SolanaAccount;

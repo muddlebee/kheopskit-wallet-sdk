@@ -80,6 +80,64 @@ const getInjectedWalletAccounts$ = (
           }
         };
 
+        // Create signAndSendTransaction function using the wallet's solana:signAndSendTransaction feature
+        const signAndSendTransaction = async (
+          transaction: Uint8Array,
+          options?: { minContextSlot?: number }
+        ): Promise<{ signature: Uint8Array }> => {
+          // Check if wallet supports transaction signing
+          if (!("solana:signAndSendTransaction" in wallet.wallet.features)) {
+            throw new Error(
+              `Wallet ${wallet.name} does not support transaction signing`,
+            );
+          }
+
+          const signAndSendFeature = wallet.wallet.features["solana:signAndSendTransaction"];
+
+          if (!signAndSendFeature) {
+            throw new Error(
+              `Wallet ${wallet.name} signAndSendTransaction feature is not available`,
+            );
+          }
+
+          if (!signAndSendFeature.signAndSendTransaction || typeof signAndSendFeature.signAndSendTransaction !== "function") {
+            throw new Error(
+              `Wallet ${wallet.name} signAndSendTransaction method is not properly configured`,
+            );
+          }
+
+          try {
+            // Call signAndSendTransaction with the account and transaction
+            // The API is variadic: (...inputs) => Promise<outputs[]>
+            const results = await signAndSendFeature.signAndSendTransaction({
+              account,
+              transaction,
+              chain: "solana:mainnet", // Default to mainnet, can be made configurable
+              options: options ? { minContextSlot: options.minContextSlot } : undefined,
+            });
+
+            // Validate the result
+            if (!Array.isArray(results) || results.length === 0) {
+              throw new Error("Wallet returned empty transaction result");
+            }
+
+            const result = results[0];
+            if (!result || !result.signature) {
+              throw new Error("Wallet returned invalid transaction result");
+            }
+
+            // Return the signature as Uint8Array
+            return { signature: new Uint8Array(result.signature) };
+          } catch (error) {
+            if (error instanceof Error) {
+              throw error;
+            }
+            throw new Error(
+              `Failed to sign and send transaction: ${String(error)}`,
+            );
+          }
+        };
+
         // WalletAccount already provides address as base58 string and publicKey as bytes
         return {
           id: getWalletAccountId(wallet.id, account.address),
@@ -89,6 +147,7 @@ const getInjectedWalletAccounts$ = (
           walletName: wallet.name,
           walletId: wallet.id,
           signMessage,
+          signAndSendTransaction,
         };
       };
 

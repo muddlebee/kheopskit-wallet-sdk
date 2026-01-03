@@ -1,9 +1,17 @@
-<!-- 20e9d499-4b85-4301-8196-b5d1e63b468b 0240c4aa-3dec-4a5d-b563-81a0c3e12309 -->
+---
+name: Solana Wallet Integration MVP
+overview: ""
+todos:
+  - id: 4ee30e90-00cf-4eda-bcbe-1cebadd7699f
+    content: Update barrel exports (utils/index.ts, api/solana/index.ts)
+    status: pending
+---
+
 # Solana Wallet Integration MVP
 
 ## Dependencies to Install
 
-```bash
+````bash
 pnpm add @solana/kit @solana/addresses @wallet-standard/app @wallet-standard/base @solana/wallet-adapter-base @solana/wallet-standard-wallet-adapter-base -F @kheopskit/core
 ```
 
@@ -104,14 +112,6 @@ Export wallets and accounts from barrel file.
 
 ## Implementation Order
 
-The files should be implemented in dependency order to avoid import errors.
 
-### To-dos
 
-- [ ] Install Solana dependencies (@solana/kit, @wallet-standard/app, etc.)
-- [ ] Create isSolanaAddress.ts, update isWalletPlatform.ts and isValidAddress.ts
-- [ ] Add Solana types to types.ts (SolanaWallet, SolanaAccount, update unions)
-- [ ] Create solana/wallets.ts with Wallet Standard detection
-- [ ] Create solana/accounts.ts for account extraction
-- [ ] Update wallets.ts and accounts.ts to include Solana switch cases
-- [ ] Update barrel exports (utils/index.ts, api/solana/index.ts)
+````
