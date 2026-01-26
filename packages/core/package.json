@@ -1,7 +1,7 @@
 {
-  "name": "@kheopskit/core",
-  "version": "0.0.1-alpha.1",
-  "description": "",
+  "name": "@muddlebee/kheopskit-core",
+  "version": "0.0.0-sw-alpha.1",
+  "description": "Swush fork of kheopskit-core with custom modifications",
   "publishConfig": {
     "access": "public"
   },
